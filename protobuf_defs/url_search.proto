@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "google/protobuf/duration.proto";
+
+message ThreatUrl {
+    string url = 1;
+    repeated int32 threat_types = 2;
+}
+
+message SearchUrlsResponse {
+    repeated ThreatUrl threats = 1;
+    google.protobuf.Duration cache_duration = 2;
+}

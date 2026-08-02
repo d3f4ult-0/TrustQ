@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+requests
+python-dotenv
+beautifulsoup4
+protobuf
+googleapis-common-protos
