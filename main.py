@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from url_handler import parse_url, is_valid_hostname, check_url_accessibility
+
+
 from rdap import get_registration_date
 from ssl_check import get_ssl_certificate
 from dns_check import check_dns
@@ -8,7 +11,30 @@ from threat_intel import check_threat_intelligence
 from scoring import calculate_score
 
 
-domain = input("Enter the name of the website: ")
+user_input = input("Enter the website or URL: ")
+
+parsed_url, domain = parse_url(user_input)
+
+if not parsed_url or not is_valid_hostname(domain):
+    print("Invalid website or URL.")
+    exit()
+
+ip_address, dns_valid = check_dns(domain)
+
+if not dns_valid:
+    print("Website does not exist or has no DNS record.")
+    exit()
+
+accessible_url, https_worked = check_url_accessibility(domain)
+
+if not accessible_url:
+    print("Domain exists, but the website could not be reached.")
+    exit()
+
+print("Full URL:", accessible_url)
+print("HTTPS:", "Available" if https_worked else "Unavailable")
+print("Hostname:", domain)
+print("IP Address:", ip_address)
 
 
 # RDAP / DOMAIN AGE
@@ -27,16 +53,6 @@ certificate, expiry, ssl_valid = get_ssl_certificate(domain)
 
 print("SSL Valid:", ssl_valid)
 print("SSL Expiry:", expiry)
-
-# DNS CHECK
-ip_address, dns_valid = check_dns(domain)
-
-if not dns_valid:
-    print("Website does not exist or could not be resolved.")
-    exit()
-
-print("IP Address:", ip_address)
-print("DNS Valid:", dns_valid)
 
 # SECURITY HEADERS
 security_headers = check_security_headers(domain)
@@ -74,23 +90,26 @@ print("Threat Intelligence:", threat_results)
 
 
 # SCORING
-if domain_age is not None:
 
-    score, reasons = calculate_score(
-        domain_age,
-        ssl_valid,
-        dns_valid,
-        security_headers,
-        threat_results
-    )
+result = calculate_score(
+    domain_age,
+    ssl_valid,
+    dns_valid,
+    security_headers,
+    threat_results,
+    https_worked
+)
 
-    print(f"Trust Quotient: {score}/100")
+score = result["trust_score"]
+reasons = result["reasons"]
 
-    if reasons:
-        print("Reasons:")
-        for reason in reasons:
-            print("-", reason)
+print(f"Trust Quotient: {score}/100")
+print(f"Threat Intelligence: {result['threat_intelligence']}/100")
+print(f"Domain Reputation: {result['domain_reputation']}/100")
+print(f"Security Posture: {result['security_posture']}/100")
+print(f"Network Signals: {result['network_signals']}/100")
 
-else:
-    print("Trust Quotient: Unable to calculate.")
-    print("Reason: Domain registration date unavailable.")
+if reasons:
+    print("Reasons:")
+    for reason in reasons:
+        print("-", reason)
