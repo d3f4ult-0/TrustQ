@@ -3,6 +3,13 @@ from pydantic import BaseModel
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 
+from url_handler import (
+    parse_url,
+    is_valid_hostname,
+    check_url_accessibility,
+    analyze_url_structure
+)
+
 from rdap import get_registration_date
 from ssl_check import get_ssl_certificate
 from dns_check import check_dns
@@ -13,6 +20,8 @@ from trust_level import get_trust_level
 
 
 app = FastAPI()
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,15 +37,42 @@ class WebsiteRequest(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "TrustQ API is running"}
+    return {
+        "message": "TrustQ API is running"
+    }
 
 
 @app.post("/analyze")
 def analyze_website(request: WebsiteRequest):
 
-    domain = request.domain
+    # -------------------------
+    # PARSE URL
+    # -------------------------
 
+    parsed_url, domain = parse_url(request.domain)
+
+    if not parsed_url or not domain:
+        return {
+            "exists": False,
+            "message": "Invalid website or URL."
+        }
+
+    if not is_valid_hostname(domain):
+        return {
+            "exists": False,
+            "message": "Invalid website or hostname."
+        }
+
+    # -------------------------
+    # URL SIGNALS
+    # -------------------------
+
+    url_signals = analyze_url_structure(parsed_url)
+
+    # -------------------------
     # DNS
+    # -------------------------
+
     ip_address, dns_valid = check_dns(domain)
 
     if not dns_valid:
@@ -46,58 +82,153 @@ def analyze_website(request: WebsiteRequest):
             "message": "Website does not exist or could not be resolved."
         }
 
-    # RDAP / Domain Age
-    registration = get_registration_date(domain)
+    # -------------------------
+    # ACCESSIBILITY + REDIRECTS
+    # -------------------------
+
+    accessible_url, https_worked, redirect_chain = check_url_accessibility(
+        parsed_url.geturl()
+    )
+
+    if not accessible_url:
+        return {
+            "domain": domain,
+            "exists": True,
+            "message": "Domain exists, but the website could not be reached."
+        }
+
+    # -------------------------
+    # FINAL DOMAIN
+    # -------------------------
+
+    final_parsed_url, final_domain = parse_url(accessible_url)
+
+    if not final_domain:
+        final_domain = domain
+
+    # -------------------------
+    # RDAP / DOMAIN AGE
+    # -------------------------
+
+    registration = get_registration_date(final_domain)
 
     if registration:
-        domain_age = (datetime.now() - registration).days
+        domain_age = (
+            datetime.now() - registration
+        ).days
     else:
         domain_age = None
 
+    # -------------------------
     # SSL
-    certificate, expiry, ssl_valid = get_ssl_certificate(domain)
+    # -------------------------
 
-    # Security Headers
-    security_headers = check_security_headers(domain)
+    certificate, expiry, ssl_valid = get_ssl_certificate(
+        final_domain
+    )
 
-    # Threat Intelligence
-    threat_results = check_threat_intelligence(domain)
+    # -------------------------
+    # SECURITY HEADERS
+    # -------------------------
 
-    # Score
-    if domain_age is not None:
-        score, reasons = calculate_score(
-            domain_age,
-            ssl_valid,
-            dns_valid,
-            security_headers,
-            threat_results
-        )
-        trust_level = get_trust_level(score)
-    else:
-        score = None
-        reasons = ["Domain registration date unavailable."]
+    security_headers = check_security_headers(
+        final_domain
+    )
+
+    # -------------------------
+    # THREAT INTELLIGENCE
+    # -------------------------
+
+    threat_results = check_threat_intelligence(
+        final_domain
+    )
+
+    # -------------------------
+    # SCORING
+    # -------------------------
+
+    result = calculate_score(
+        domain_age,
+        ssl_valid,
+        dns_valid,
+        security_headers,
+        threat_results,
+        https_worked,
+        url_signals
+    )
+
+    score = result["trust_score"]
+
+    reasons = result["reasons"]
+
+    confidence = result["confidence"]
+
+    confidence_reasons = result["confidence_reasons"]
+
+    # -------------------------
+    # TRUST LEVEL
+    # -------------------------
+
+    trust_level = get_trust_level(score)
+
+    # -------------------------
+    # RETURN RESULT
+    # -------------------------
 
     return {
-    "exists": True,
+        "exists": True,
 
-    "domain": domain,
+        "domain": domain,
 
-    "trust_quotient": score,
+        "original_domain": domain,
 
-    "trust_level": trust_level,
+        "final_domain": final_domain,
 
-    "reasons": reasons,
+        "trust_quotient": score,
 
-    "domain_age_days": domain_age,
+        "trust_level": trust_level,
 
-    "ip_address": ip_address,
+        "confidence": confidence,
 
-    "dns_valid": dns_valid,
+        "confidence_reasons": confidence_reasons,
 
-    "ssl_valid": ssl_valid,
+        "reasons": reasons,
 
-    "security_headers": security_headers,
+        "domain_age_days": domain_age,
 
-    "threat_intelligence": threat_results
-}
-    
+        "ip_address": ip_address,
+
+        "dns_valid": dns_valid,
+
+        "https_worked": https_worked,
+
+        "accessible_url": accessible_url,
+
+        "redirect_chain": redirect_chain,
+
+        "url_signals": url_signals,
+
+        "ssl_valid": ssl_valid,
+
+        "ssl_expiry": expiry,
+
+        "security_headers": security_headers,
+
+        "threat_intelligence": threat_results,
+
+        "threat_intelligence_score": result[
+            "threat_intelligence"
+        ],
+
+        "domain_reputation": result[
+            "domain_reputation"
+        ],
+
+        "security_posture": result[
+            "security_posture"
+        ],
+
+        "network_signals": result[
+            "network_signals"
+        ]
+    }
