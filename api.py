@@ -7,7 +7,8 @@ from url_handler import (
     parse_url,
     is_valid_hostname,
     check_url_accessibility,
-    analyze_url_structure
+    analyze_url_structure,
+    analyze_redirect_chain
 )
 
 from rdap import get_registration_date

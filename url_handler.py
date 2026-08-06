@@ -58,6 +58,7 @@ def check_url_accessibility(url):
     except requests.RequestException:
         pass
 
+    # HTTPS failed, try HTTP fallback
     if url.startswith("https://"):
         http_url = "http://" + url[8:]
 
@@ -85,6 +86,7 @@ def check_url_accessibility(url):
 
     return None, False, []
 
+
 def analyze_url_structure(parsed_url):
     signals = []
 
@@ -93,7 +95,10 @@ def analyze_url_structure(parsed_url):
     query = parsed_url.query
     full_url = parsed_url.geturl()
 
-    # Long URL
+    # ---------------------------------------------------------
+    # LONG URL
+    # ---------------------------------------------------------
+
     if len(full_url) > 200:
         signals.append({
             "type": "long_url",
@@ -101,7 +106,10 @@ def analyze_url_structure(parsed_url):
             "message": "URL is unusually long."
         })
 
-    # Excessive subdomains
+    # ---------------------------------------------------------
+    # EXCESSIVE SUBDOMAINS
+    # ---------------------------------------------------------
+
     if hostname and hostname.count(".") >= 3:
         signals.append({
             "type": "many_subdomains",
@@ -109,18 +117,29 @@ def analyze_url_structure(parsed_url):
             "message": "URL contains multiple subdomains."
         })
 
-    # IP address used as hostname
+    # ---------------------------------------------------------
+    # IP ADDRESS AS HOSTNAME
+    # ---------------------------------------------------------
+
     if hostname:
         parts = hostname.split(".")
 
-        if len(parts) == 4 and all(part.isdigit() for part in parts):
+        if (
+            len(parts) == 4
+            and all(part.isdigit() for part in parts)
+        ):
             signals.append({
                 "type": "ip_hostname",
                 "severity": "medium",
-                "message": "URL uses an IP address instead of a domain name."
+                "message": (
+                    "URL uses an IP address instead of a domain name."
+                )
             })
 
-    # Percent encoding
+    # ---------------------------------------------------------
+    # PERCENT ENCODING
+    # ---------------------------------------------------------
+
     if "%" in path or "%" in query:
         signals.append({
             "type": "encoded_url",
@@ -128,7 +147,10 @@ def analyze_url_structure(parsed_url):
             "message": "URL contains percent-encoded characters."
         })
 
-    # Archive/executable extension
+    # ---------------------------------------------------------
+    # SUSPICIOUS FILE EXTENSIONS
+    # ---------------------------------------------------------
+
     suspicious_extensions = (
         ".exe",
         ".scr",
@@ -151,7 +173,10 @@ def analyze_url_structure(parsed_url):
             )
         })
 
-    # Embedded username
+    # ---------------------------------------------------------
+    # EMBEDDED USERNAME
+    # ---------------------------------------------------------
+
     if parsed_url.username:
         signals.append({
             "type": "embedded_username",
@@ -159,19 +184,32 @@ def analyze_url_structure(parsed_url):
             "message": "URL contains an embedded username."
         })
 
-    # Non-default port
-    if parsed_url.port:
+    # ---------------------------------------------------------
+    # NON-STANDARD PORT
+    # ---------------------------------------------------------
+
+    try:
+        port = parsed_url.port
+    except ValueError:
+        port = None
+
+    if port:
         signals.append({
             "type": "nonstandard_port",
             "severity": "medium",
             "message": (
-                f"URL uses a non-default port "
-                f"({parsed_url.port})."
+                f"URL uses a non-default port ({port})."
             )
         })
 
-    # Deep path
-    path_parts = [part for part in path.split("/") if part]
+    # ---------------------------------------------------------
+    # DEEP PATH
+    # ---------------------------------------------------------
+
+    path_parts = [
+        part for part in path.split("/")
+        if part
+    ]
 
     if len(path_parts) >= 6:
         signals.append({
@@ -180,7 +218,10 @@ def analyze_url_structure(parsed_url):
             "message": "URL contains a deeply nested path."
         })
 
-    # Sensitive keywords
+    # ---------------------------------------------------------
+    # SENSITIVE KEYWORDS
+    # ---------------------------------------------------------
+
     suspicious_keywords = (
         "login",
         "verify",
@@ -211,15 +252,21 @@ def analyze_url_structure(parsed_url):
             )
         })
 
-    # Large query
+    # ---------------------------------------------------------
+    # LARGE QUERY STRING
+    # ---------------------------------------------------------
+
     if len(query) > 300:
         signals.append({
             "type": "large_query",
             "severity": "low",
-            "message": "URL contains an unusually large query string."
+            "message": (
+                "URL contains an unusually large query string."
+            )
         })
 
     return signals
+
 
 def analyze_redirect_chain(redirect_chain):
     signals = []
@@ -227,21 +274,35 @@ def analyze_redirect_chain(redirect_chain):
     if not redirect_chain:
         return signals
 
-    # Number of redirects
-    redirect_count = max(0, len(redirect_chain) - 1)
+    # ---------------------------------------------------------
+    # REDIRECT COUNT
+    # ---------------------------------------------------------
+
+    redirect_count = max(
+        0,
+        len(redirect_chain) - 1
+    )
 
     if redirect_count == 0:
         return signals
 
-    # Multiple redirects
+    # ---------------------------------------------------------
+    # NUMBER OF REDIRECTS
+    # ---------------------------------------------------------
+
     if redirect_count == 1:
+
         signals.append({
             "type": "redirect",
             "severity": "low",
-            "message": "URL redirects once before reaching its destination."
+            "message": (
+                "URL redirects once before reaching "
+                "its destination."
+            )
         })
 
     elif redirect_count <= 3:
+
         signals.append({
             "type": "multiple_redirects",
             "severity": "medium",
@@ -252,6 +313,7 @@ def analyze_redirect_chain(redirect_chain):
         })
 
     else:
+
         signals.append({
             "type": "excessive_redirects",
             "severity": "high",
@@ -261,18 +323,25 @@ def analyze_redirect_chain(redirect_chain):
             )
         })
 
-    # Domain changes
+    # ---------------------------------------------------------
+    # CROSS-DOMAIN REDIRECT
+    # ---------------------------------------------------------
+
     domains = []
 
     for url in redirect_chain:
+
         parsed = urlparse(url)
 
         if parsed.hostname:
-            domains.append(parsed.hostname.lower())
+            domains.append(
+                parsed.hostname.lower()
+            )
 
     unique_domains = set(domains)
 
     if len(unique_domains) > 1:
+
         signals.append({
             "type": "cross_domain_redirect",
             "severity": "medium",
