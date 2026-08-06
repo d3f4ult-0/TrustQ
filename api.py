@@ -93,6 +93,12 @@ def analyze_website(request: WebsiteRequest):
         )
     )
 
+    redirect_signals = analyze_redirect_chain(
+        redirect_chain
+    )
+
+    url_signals.extend(redirect_signals)
+
     if not accessible_url:
         return {
             "domain": domain,
@@ -102,7 +108,6 @@ def analyze_website(request: WebsiteRequest):
                 "could not be reached."
             )
         }
-
     # -------------------------
     # FINAL DOMAIN
     # -------------------------
