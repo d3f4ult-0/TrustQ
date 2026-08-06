@@ -86,22 +86,29 @@ def analyze_website(request: WebsiteRequest):
     # ACCESSIBILITY + REDIRECTS
     # -------------------------
 
-    accessible_url, https_worked, redirect_chain = check_url_accessibility(
-        parsed_url.geturl()
+    accessible_url, https_worked, redirect_chain = (
+        check_url_accessibility(
+            parsed_url.geturl()
+        )
     )
 
     if not accessible_url:
         return {
             "domain": domain,
             "exists": True,
-            "message": "Domain exists, but the website could not be reached."
+            "message": (
+                "Domain exists, but the website "
+                "could not be reached."
+            )
         }
 
     # -------------------------
     # FINAL DOMAIN
     # -------------------------
 
-    final_parsed_url, final_domain = parse_url(accessible_url)
+    final_parsed_url, final_domain = parse_url(
+        accessible_url
+    )
 
     if not final_domain:
         final_domain = domain
@@ -110,7 +117,9 @@ def analyze_website(request: WebsiteRequest):
     # RDAP / DOMAIN AGE
     # -------------------------
 
-    registration = get_registration_date(final_domain)
+    registration = get_registration_date(
+        final_domain
+    )
 
     if registration:
         domain_age = (
@@ -123,8 +132,8 @@ def analyze_website(request: WebsiteRequest):
     # SSL
     # -------------------------
 
-    certificate, expiry, ssl_valid = get_ssl_certificate(
-        final_domain
+    certificate, expiry, ssl_valid = (
+        get_ssl_certificate(final_domain)
     )
 
     # -------------------------
@@ -159,12 +168,6 @@ def analyze_website(request: WebsiteRequest):
 
     score = result["trust_score"]
 
-    reasons = result["reasons"]
-
-    confidence = result["confidence"]
-
-    confidence_reasons = result["confidence_reasons"]
-
     # -------------------------
     # TRUST LEVEL
     # -------------------------
@@ -172,50 +175,67 @@ def analyze_website(request: WebsiteRequest):
     trust_level = get_trust_level(score)
 
     # -------------------------
+    # URL INFORMATION
+    # -------------------------
+
+    original_url = parsed_url.geturl()
+
+    final_url = accessible_url
+
+    # -------------------------
     # RETURN RESULT
     # -------------------------
 
     return {
+
         "exists": True,
 
+        # Basic domain information
         "domain": domain,
-
         "original_domain": domain,
-
         "final_domain": final_domain,
 
-        "trust_quotient": score,
-
-        "trust_level": trust_level,
-
-        "confidence": confidence,
-
-        "confidence_reasons": confidence_reasons,
-
-        "reasons": reasons,
-
-        "domain_age_days": domain_age,
-
-        "ip_address": ip_address,
-
-        "dns_valid": dns_valid,
-
-        "https_worked": https_worked,
-
+        # URLs
+        "original_url": original_url,
+        "final_url": final_url,
         "accessible_url": accessible_url,
 
-        "redirect_chain": redirect_chain,
+        # Trust result
+        "trust_quotient": score,
+        "trust_level": trust_level,
 
+        # Confidence
+        "confidence": result["confidence"],
+        "confidence_reasons": result[
+            "confidence_reasons"
+        ],
+
+        # Explanation
+        "reasons": result["reasons"],
+
+        # Domain / network
+        "domain_age_days": domain_age,
+        "ip_address": ip_address,
+        "dns_valid": dns_valid,
+
+        # HTTPS
+        "https_worked": https_worked,
+
+        # Redirects / URL intelligence
+        "redirect_chain": redirect_chain,
         "url_signals": url_signals,
 
+        # SSL
         "ssl_valid": ssl_valid,
-
         "ssl_expiry": expiry,
 
+        # Security
         "security_headers": security_headers,
 
+        # Threat intelligence
         "threat_intelligence": threat_results,
 
+        # Score breakdown
         "threat_intelligence_score": result[
             "threat_intelligence"
         ],
