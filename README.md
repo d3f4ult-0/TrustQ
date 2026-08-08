@@ -312,8 +312,8 @@ API keys should **never** be hard-coded into the source code.
 Use environment variables for services such as:
 
 ```text
-GOOGLE_SAFE_BROWSING_API_KEY=(YOUR_KEY) [Create a separate .env file in your work folder.]
-api_key = os.getenv("GOOGLE_SAFE_BROWSING_KEY") [Add this in your code]
+KEY=(YOUR_KEY) [Create a separate .env file in your work folder.]
+api_key = os.getenv("KEY") [Add this in your code]
 ```
 
 and any other required credentials.
