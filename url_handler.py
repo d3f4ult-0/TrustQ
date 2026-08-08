@@ -49,10 +49,12 @@ def check_url_accessibility(url):
     Try to access the exact URL supplied by the user.
 
     If HTTPS fails, fall back to HTTP.
+
     Returns:
         final_url,
         https_worked,
-        redirect_chain
+        redirect_chain,
+        status_code
     """
 
     def try_url(target_url):
@@ -72,7 +74,8 @@ def check_url_accessibility(url):
             return (
                 response.url,
                 response.url.startswith("https://"),
-                redirect_chain
+                redirect_chain,
+                response.status_code
             )
 
         except requests.RequestException:
@@ -100,7 +103,7 @@ def check_url_accessibility(url):
         if result:
             return result
 
-    return None, False, []
+    return None, False, [], None
 
 
 def analyze_url_structure(parsed_url):

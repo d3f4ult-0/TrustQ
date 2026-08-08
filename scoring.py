@@ -5,7 +5,8 @@ def calculate_score(
     security_headers,
     threat_results,
     https_worked,
-    url_signals
+    url_signals,
+    status_code
 ):
 
     reasons = []
@@ -262,22 +263,17 @@ def calculate_score(
 
     network_signals = min(
         network_signals,
-        100
-    )
+        100)
 
     # =====================================================
     # THREAT INTELLIGENCE
     # =====================================================
 
-    threat_intelligence = 100
+    threat_intelligence = 0
 
-    google_result = threat_results.get(
-        "google_safe_browsing"
-    )
+    google_result = threat_results.get("google_safe_browsing")
 
-    openphish_result = threat_results.get(
-        "openphish"
-    )
+    openphish_result = threat_results.get("openphish")
 
     # -------------------------
     # GOOGLE SAFE BROWSING
@@ -285,23 +281,17 @@ def calculate_score(
 
     if google_result is True:
 
-        threat_intelligence -= 50
-
-        reasons.append(
-            "Google Safe Browsing detected a threat."
-        )
+        reasons.append("Google Safe Browsing detected a threat.")
 
     elif google_result is False:
 
-        reasons.append(
-            "Google Safe Browsing found no known threat."
-        )
+        threat_intelligence += 50
+
+        reasons.append("Google Safe Browsing found no known threat.")
 
     else:
 
-        reasons.append(
-            "Google Safe Browsing could not be checked."
-        )
+        reasons.append("Google Safe Browsing could not be checked.")
 
     # -------------------------
     # OPENPHISH
@@ -309,31 +299,24 @@ def calculate_score(
 
     if openphish_result is True:
 
-        threat_intelligence -= 50
-
-        reasons.append(
-            "OpenPhish detected a known phishing URL."
-        )
+        reasons.append("OpenPhish detected a known phishing URL.")
 
     elif openphish_result is False:
 
-        reasons.append(
-            "OpenPhish found no known phishing match."
-        )
+        threat_intelligence += 50
+
+        reasons.append("OpenPhish found no known phishing match.")
 
     else:
 
-        reasons.append(
-            "OpenPhish could not be checked."
-        )
+        reasons.append("OpenPhish could not be checked.")
 
     threat_intelligence = max(
         0,
         min(
-            threat_intelligence,
-            100
-        )
-    )
+        threat_intelligence,
+        100
+        ))
 
     # =====================================================
     # FINAL TRUST QUOTIENT
@@ -452,15 +435,27 @@ def calculate_score(
             "could not be completed."
         )
 
+    # HTTP Status
+
+    if status_code is not None:
+
+            confidence_score += 1
+
+    else:
+
+        confidence_reasons.append(
+        "HTTP response status could not be determined."
+        )
+
     # -------------------------
     # CONFIDENCE LEVEL
     # -------------------------
 
-    if confidence_score >= 9:
+    if confidence_score >= 10:
 
         confidence = "HIGH"
 
-    elif confidence_score >= 6:
+    elif confidence_score >= 7:
 
         confidence = "MEDIUM"
 
