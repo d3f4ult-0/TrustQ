@@ -36,7 +36,7 @@ def calculate_score(
 
     if domain_age is None:
 
-        domain_reputation = 80
+        domain_reputation = 55
 
         reasons.append(
             "Domain registration date is unavailable; "
