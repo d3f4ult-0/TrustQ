@@ -11,9 +11,18 @@ def parse_url(user_input):
     if not user_input.startswith(("http://", "https://")):
         user_input = "https://" + user_input
 
-    parsed = urlparse(user_input)
+    try:
+        parsed = urlparse(user_input)
 
-    if not parsed.hostname:
+        if not parsed.hostname:
+            return None, None
+
+        # Validate the port.
+        # Accessing parsed.port raises ValueError
+        # when the port is invalid, e.g. 99999.
+        port = parsed.port
+
+    except ValueError:
         return None, None
 
     return parsed, parsed.hostname
