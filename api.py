@@ -87,7 +87,7 @@ def analyze_website(request: WebsiteRequest):
     # ACCESSIBILITY + REDIRECTS
     # -------------------------
 
-    accessible_url, https_worked, redirect_chain = (
+    accessible_url, https_worked, redirect_chain, status_code = (
         check_url_accessibility(
             parsed_url.geturl()
         )
@@ -169,7 +169,8 @@ def analyze_website(request: WebsiteRequest):
         security_headers,
         threat_results,
         https_worked,
-        url_signals
+        url_signals,
+        status_code
     )
 
     score = result["trust_score"]
