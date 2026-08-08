@@ -1,16 +1,16 @@
-# 🛡️ TrustQ
+🛡️ TrustQ
 
-### **Because "it has HTTPS" is not a cybersecurity strategy.**
+Because "it has HTTPS" is not a cybersecurity strategy.
 
-**TrustQ** is an explainable digital trust analysis system that evaluates websites and produces a **Trust Quotient from 0–100**, along with the reasons behind that score.
+TrustQ is an explainable digital trust analysis system that evaluates websites and produces a Trust Quotient from 0–100, along with the reasons behind that score.
 
-Instead of simply screaming **"PHISHING!!!"** at the user and running away, TrustQ asks a more useful question:
+Instead of simply screaming "PHISHING!!!" at the user and running away, TrustQ asks a more useful question:
 
-> **"How trustworthy does this website actually appear, and why?"**
+«"How trustworthy does this website actually appear, and why?"»
 
-## 🚨 The Problem
+🚨 The Problem
 
-The internet has approximately **seven billion ways to make a user regret clicking a link.**
+The internet has approximately seven billion ways to make a user regret clicking a link.
 
 A URL can be:
 
@@ -24,47 +24,48 @@ Existing security tools often focus on detecting known threats.
 
 TrustQ tries to provide something more understandable:
 
-> **A score + evidence + context.**
+«A score + evidence + context.»
 
-Because apparently humans like knowing *why* something is suspicious.
+Because apparently humans like knowing why something is suspicious.
 
-# 🧠 How TrustQ Works
+🧠 How TrustQ Works
 
 TrustQ analyzes a website using several independent categories rather than throwing random points into one enormous mathematical soup.
 
-### Current scoring architecture
+Current scoring architecture
 
-| Category                |  Weight |
-| ----------------------- | ------: |
-| 🛡️ Threat Intelligence | **35%** |
-| 🌐 Domain Reputation    | **25%** |
-| 🔐 Security Posture     | **25%** |
-| 📡 Network Signals      | **15%** |
+Category| Weight
+🛡️ Threat Intelligence| 35%
+🌐 Domain Reputation| 25%
+🔐 Security Posture| 25%
+📡 Network Signals| 15%
 
 The final Trust Quotient is produced from these weighted category scores.
 
-This makes the system easier to understand, calibrate, and improve later.
+The current scoring rules and point allocation are manually designed and calibrated. TrustQ does not currently use AI or machine learning to determine the score.
 
-## 🔎 What TrustQ Checks
+This architecture keeps the scoring system transparent and makes it possible to refine the rules as more evidence and testing become available.
 
-### 🛡️ Threat Intelligence
+🔎 What TrustQ Checks
+
+🛡️ Threat Intelligence
 
 TrustQ checks external threat-intelligence sources such as:
 
-* **Google Safe Browsing**
-* **OpenPhish**
+* Google Safe Browsing
+* OpenPhish
 
 The goal is to distinguish between:
 
-> **"No known threat detected"**
+«"No known threat detected"»
 
 and
 
-> **"We couldn't actually check."**
+«"We couldn't actually check."»
 
 Because those are, surprisingly, not the same thing.
 
-### 🌐 Domain Reputation
+🌐 Domain Reputation
 
 TrustQ examines domain-related signals including:
 
@@ -73,13 +74,13 @@ TrustQ examines domain-related signals including:
 * Registration availability
 * Domain-related reputation signals
 
-A very recently registered domain doesn't automatically mean **EVIL™**.
+A very recently registered domain doesn't automatically mean EVIL™.
 
 It simply means:
 
-> *"Hmm. Interesting. Let's look at the other evidence."*
+«"Hmm. Interesting. Let's look at the other evidence."»
 
-### 🔐 Security Posture
+🔐 Security Posture
 
 TrustQ checks security-related properties including:
 
@@ -94,7 +95,7 @@ TrustQ checks security-related properties including:
 
 Security headers aren't magical trust certificates, but they provide useful information about how a website is configured.
 
-### 📡 Network Signals
+📡 Network Signals
 
 TrustQ also considers network-level observations such as:
 
@@ -109,54 +110,41 @@ Because sometimes the website doesn't even bother to explain what it is doing.
 
 TrustQ has to investigate.
 
-# 🔗 URL Intelligence
+🔗 URL Intelligence
 
 TrustQ isn't limited to boring little:
 
-```text
 example.com
-```
 
 It can handle:
 
-```text
 https://example.com
-```
 
 and deeper URLs such as:
 
-```text
 https://youtube.com/BeastBoyShub/members
-```
 
 The system parses the URL, extracts the hostname, validates it, and analyzes the relevant domain/network signals.
 
 Because apparently URLs evolved from:
 
-```text
 website.com
-```
 
 into:
 
-```text
 https://website.com/some/very/specific/thing?id=938472&source=why
-```
 
-# 🧮 Trust Quotient
+🧮 Trust Quotient
 
 The result is a score between:
 
-```text
 0 ─────────────────────────────── 100
-```
 
-The important part is that **TrustQ doesn't just give the number.**
-It also exposes the underlying category scores and signals so the user can understand *why* the website received its rating.
+The important part is that TrustQ doesn't just give the number.
+It also exposes the underlying category scores and signals so the user can understand why the website received its rating.
 
-### Example
+Example
 
-```text
 Trust Quotient
        92 / 100
 
@@ -164,15 +152,13 @@ Threat Intelligence     100
 Domain Reputation        94
 Security Posture         86
 Network Signals          88
-```
 
-The goal is **explainability**, not just:
+The goal is explainability, not just:
 
-> "AI says 92. Trust me bro."
+«"A mysterious algorithm says 92. Trust me bro."»
 
-# 🏗️ Architecture
+🏗️ Architecture
 
-```text
                  ┌─────────────────┐
                  │      User       │
                  └────────┬────────┘
@@ -208,7 +194,6 @@ The goal is **explainability**, not just:
                           │
                           ▼
                  Beautiful Frontend
-```
 
 The architecture is designed so the frontend doesn't need to understand the entire analysis engine.
 
@@ -216,18 +201,18 @@ It just receives the results and makes them look considerably less terrifying.
 
 ---
 
-# 🛠️ Tech Stack
+🛠️ Tech Stack
 
-### Backend
+Backend
 
 * 🐍 Python
 * ⚡ FastAPI
-* `requests`
+* "requests"
 * RDAP
 * DNS / SSL analysis
 * Threat-intelligence APIs
 
-### Frontend
+Frontend
 
 * ⚛️ React / JavaScript
 * HTML
@@ -235,17 +220,16 @@ It just receives the results and makes them look considerably less terrifying.
 * Responsive UI
 * Dark / Light mode
 
-### Development
+Development
 
 * Git
 * GitHub
 * Cloud deployment architecture
 
-# 📂 Project Structure
+📂 Project Structure
 
 The project is broadly organized around separate analysis responsibilities:
 
-```text
 TrustQ/
 │
 ├── backend/
@@ -262,104 +246,86 @@ TrustQ/
 │   └── ...
 │
 └── README.md
-```
 
 The exact structure may evolve because software projects apparently enjoy moving furniture around while you're trying to debug them.
 
-# 🚀 Running TrustQ
+🚀 Running TrustQ
 
-## 1. Clone the repository
+1. Clone the repository
 
-```bash
 git clone https://github.com/d3f4ult-0/TrustQ.git
 cd TrustQ
-```
 
-## 2. Set up the backend
+2. Set up the backend
 
 Create a virtual environment:
 
-```bash
 python -m venv .venv
-```
 
 Activate it:
 
-### Linux/macOS
+Linux/macOS
 
-```bash
 source .venv/bin/activate
-```
 
-### Windows
+Windows
 
-```powershell
 .venv\Scripts\activate
-```
 
 Install dependencies:
 
-```bash
 pip install -r requirements.txt
-```
 
-## 3. Configure environment variables
+3. Configure environment variables
 
-API keys should **never** be hard-coded into the source code.
+API keys should never be hard-coded into the source code.
 
 Use environment variables for services such as:
 
-```text
 GOOGLE_SAFE_BROWSING_API_KEY=...
-```
 
 and any other required credentials.
 
-### Please don't commit `.env` files.
+Please don't commit ".env" files.
 
 GitHub does not need your API keys.
 
 Future-you especially does not need the email from Google saying:
 
-> **"Your API key has been exposed."**
+«"Your API key has been exposed."»
 
-## 4. Start the FastAPI server
+4. Start the FastAPI server
 
 For example:
 
-```bash
 uvicorn main:app --reload
-```
 
 The API should then be available locally.
 
-# 🌐 API Concept
+🌐 API Concept
 
 TrustQ accepts a URL and sends it through the analysis pipeline.
 
 Conceptually:
 
-```http
 POST /analyze
-```
 
 with something like:
 
-```json
 {
   "url": "https://example.com"
 }
-```
 
 The backend performs the analysis and returns structured information containing the Trust Quotient, category scores, and supporting signals.
+
 The frontend then transforms that JSON into something humans can actually read.
+
 Because JSON is technically beautiful, but displaying raw JSON to a normal person is a cry for help.
 
-# 🧪 Example Analysis
+🧪 Example Analysis
 
 A successful analysis might conceptually look like:
 
-```json
 {
   "trust_quotient": 92,
   "threat_intelligence": 100,
@@ -367,11 +333,9 @@ A successful analysis might conceptually look like:
   "security_posture": 86,
   "network_signals": 88
 }
-```
 
 The frontend can then turn that into:
 
-```text
 ╭──────────────────────────────╮
 │        TRUST QUOTIENT        │
 │                              │
@@ -382,36 +346,33 @@ The frontend can then turn that into:
 │  🔐 Security Posture    86   │
 │  📡 Network Signals     88   │
 ╰──────────────────────────────╯
-```
 
-# ⚠️ Important Limitations
+⚠️ Important Limitations
 
-TrustQ is **not a universal truth machine**.
+TrustQ is not a universal truth machine.
 
 A high score does not guarantee that a website is safe.
 A low score does not necessarily mean that a website is malicious.
+
 For example:
 
-```text
 Bad security configuration
         ≠
 Malicious website
-```
+
 and:
 
-```text
 HTTPS
         ≠
 Automatically trustworthy
-```
 
-TrustQ is an **evidence-based trust estimation system**, not a magical crystal ball with a REST API.
+TrustQ is an evidence-based trust estimation system, not a magical crystal ball with a REST API.
 
-# 🧠 Why Explainability Matters
+🧠 Why Explainability Matters
 
 A security system saying:
 
-> ❌ **DO NOT TRUST**
+«❌ DO NOT TRUST»
 
 isn't particularly useful if the user has no idea why.
 
@@ -419,7 +380,6 @@ TrustQ aims to provide the reasoning behind its assessment.
 
 For example:
 
-```text
 Trust Quotient: 41/100
 
 Reasons:
@@ -428,11 +388,10 @@ Reasons:
 ⚠️ Missing HSTS
 ⚠️ Weak security posture
 ✅ HTTPS certificate is valid
-```
 
-The user gets **context**, not merely a red button.
+The user gets context, not merely a red button.
 
-# 🤖 Future Plans
+🤖 Future Plans
 
 Potential future improvements include:
 
@@ -450,32 +409,36 @@ Potential future improvements include:
 * [ ] Automated analysis improvements
 * [ ] Machine-learning-assisted scoring
 
-And eventually:
+🤖 Possible future AI-assisted scoring
 
-### 🤖 AI-assisted scoring
+The current TrustQ scoring system is manually designed. A future version could potentially use machine learning to learn relationships between signals from a properly constructed and labelled dataset.
 
-Instead of manually deciding:
+That would require substantial work, including:
 
-```text
-"This gets 7 points because I said so."
-```
-a trained model could learn relationships between signals from a properly constructed dataset.
-Which would be considerably more defensible than trusting the sleep-deprived teenager currently holding the scoring spreadsheet.
+* Collecting representative legitimate and malicious-domain data
+* Defining reliable labels
+* Engineering useful features
+* Training and validating models
+* Measuring false positives and false negatives
+* Comparing model performance against the current rule-based system
+* Maintaining explainability
 
-# 🔒 Security Philosophy
+The goal would not simply be to replace the current scoring system with a black box, but to determine whether a trained model can produce more accurate and defensible trust estimates while retaining meaningful explanations.
+
+🔒 Security Philosophy
 
 TrustQ follows a simple principle:
 
-> **Don't ask users to blindly trust the security tool. Show them the evidence.**
+«Don't ask users to blindly trust the security tool. Show them the evidence.»
 
 The goal is not to replace existing security infrastructure.
 It's to make its signals more understandable and actionable.
 
-# 📜 Disclaimer
+📜 Disclaimer
 
 TrustQ is an experimental cybersecurity project.
 
-It should **not** be treated as a definitive security verdict or as a replacement for professional security analysis.
+It should not be treated as a definitive security verdict or as a replacement for professional security analysis.
 
 Trust scores are estimates generated from available signals and may be affected by:
 
@@ -489,35 +452,36 @@ Trust scores are estimates generated from available signals and may be affected 
 
 In other words:
 
-**The internet is complicated and TrustQ is not omniscient.**
+The internet is complicated and TrustQ is not omniscient.
 
 Neither are humans.
 
 The humans are arguably worse.
 
-# 👨‍💻 Development Status
+👨‍💻 Development Status
 
-**Status: 🟢 Actively developed**
+Status: 🟢 Actively developed
 
 TrustQ started as an idea about making digital trust easier to understand and gradually evolved into an actual working analysis pipeline.
+
 The project is still being refined, calibrated, debugged, redesigned, and occasionally held together with Python and questionable optimism.
+
 But it works.
+
 And that's a pretty good place to start.
 
-## ⭐ If You Found This Interesting
+⭐ If You Found This Interesting
 
 Give the project a star.
 
-It provides approximately **zero additional security**, but it makes the developer emotionally stronger.
+It provides approximately zero additional security, but it makes the developer emotionally stronger.
 
-```text
 $ git add .
 $ git commit -m "made website less suspicious"
 $ git push
-```
 
-**TrustQ**
+TrustQ
 
-> *Because clicking "Continue Anyway" shouldn't be your entire cybersecurity strategy.* 🛡️
+«Because clicking "Continue Anyway" shouldn't be your entire cybersecurity strategy. 🛡️»
 
-**AND FOR FUCK'S SAKE, DON'T USE THIS TO UNDERSTAND HUMANS. THEY HAVE MORE BUGS THAN FC25.**
+AND FOR FUCK'S SAKE, DON'T USE THIS TO UNDERSTAND HUMANS. THEY HAVE MORE BUGS THAN FC25.
