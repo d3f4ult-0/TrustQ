@@ -520,4 +520,4 @@ $ git push
 
 > *Because clicking "Continue Anyway" shouldn't be your entire cybersecurity strategy.* 🛡️
 
-**AND FOR FUCK'S SAKE, DON'T USE THIS TO UNDERSTAND HUMANS. THEY HAVE MORE BUGS FC25**
+**AND FOR FUCK'S SAKE, DON'T USE THIS TO UNDERSTAND HUMANS. THEY HAVE MORE BUGS THAN FC25.**
