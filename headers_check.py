@@ -4,7 +4,7 @@ import requests
 def check_security_headers(domain):
     url = f"https://{domain}"
 
-    response = requests.get(url, timeout=10)
+    response = requests.get(url, timeout=10, verify=False)
     headers = response.headers
 
     security_headers = {

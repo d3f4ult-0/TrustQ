@@ -1,25 +1,34 @@
-import ssl
 import socket
+import ssl
 from datetime import datetime
 
 
 def get_ssl_certificate(domain):
     context = ssl.create_default_context()
 
-    with socket.create_connection((domain, 443)) as sock:
-        with context.wrap_socket(sock, server_hostname=domain) as secure_sock:
-            certificate = secure_sock.getpeercert()
+    try:
+        with socket.create_connection((domain, 443), timeout=5) as sock:
+            with context.wrap_socket(
+                sock,
+                server_hostname=domain
+            ) as secure_sock:
 
-    expiry = datetime.strptime(
-        certificate["notAfter"],
-        "%b %d %H:%M:%S %Y %Z"
-    )
+                certificate = secure_sock.getpeercert()
 
-    today = datetime.now()
+                expiry_string = certificate.get("notAfter")
 
-    if today > expiry:
-        ssl_valid = False
-    else:
-        ssl_valid = True
+                if expiry_string:
+                    expiry = datetime.strptime(
+                        expiry_string,
+                        "%b %d %H:%M:%S %Y %Z"
+                    )
+                else:
+                    expiry = None
 
-    return certificate, expiry, ssl_valid
+                return certificate, expiry, True
+
+    except ssl.SSLCertVerificationError as error:
+        return None, None, False
+
+    except (socket.timeout, socket.error, ssl.SSLError):
+        return None, None, False

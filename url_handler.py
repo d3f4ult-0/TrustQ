@@ -36,35 +36,20 @@ def is_valid_hostname(hostname):
 
 
 def check_url_accessibility(url):
-    try:
-        response = requests.get(
-            url,
-            timeout=5,
-            allow_redirects=True
-        )
+    """
+    Try to access the exact URL supplied by the user.
 
-        redirect_chain = [
-            r.url for r in response.history
-        ]
+    If HTTPS fails, fall back to HTTP.
+    Returns:
+        final_url,
+        https_worked,
+        redirect_chain
+    """
 
-        redirect_chain.append(response.url)
-
-        return (
-            response.url,
-            url.startswith("https://"),
-            redirect_chain
-        )
-
-    except requests.RequestException:
-        pass
-
-    # HTTPS failed, try HTTP fallback
-    if url.startswith("https://"):
-        http_url = "http://" + url[8:]
-
+    def try_url(target_url):
         try:
             response = requests.get(
-                http_url,
+                target_url,
                 timeout=5,
                 allow_redirects=True
             )
@@ -77,12 +62,34 @@ def check_url_accessibility(url):
 
             return (
                 response.url,
-                False,
+                response.url.startswith("https://"),
                 redirect_chain
             )
 
         except requests.RequestException:
-            return None, False, []
+            return None
+
+    # ---------------------------------------------------------
+    # TRY THE USER'S ORIGINAL URL
+    # ---------------------------------------------------------
+
+    result = try_url(url)
+
+    if result:
+        return result
+
+    # ---------------------------------------------------------
+    # HTTPS FAILED → TRY HTTP
+    # ---------------------------------------------------------
+
+    if url.startswith("https://"):
+
+        http_url = "http://" + url[8:]
+
+        result = try_url(http_url)
+
+        if result:
+            return result
 
     return None, False, []
 
