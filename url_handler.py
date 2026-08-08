@@ -306,21 +306,100 @@ def analyze_redirect_chain(redirect_chain):
         return signals
 
     # ---------------------------------------------------------
-    # NUMBER OF REDIRECTS
+    # PARSE DOMAINS
     # ---------------------------------------------------------
 
-    if redirect_count == 1:
+    parsed_urls = [
+        urlparse(url)
+        for url in redirect_chain
+    ]
+
+    domains = [
+        parsed.hostname.lower()
+        for parsed in parsed_urls
+        if parsed.hostname
+    ]
+
+    unique_domains = set(domains)
+
+    # ---------------------------------------------------------
+    # CHECK FOR NORMAL CANONICAL REDIRECT
+    # ---------------------------------------------------------
+
+    canonical_redirect = True
+
+    for i in range(len(parsed_urls) - 1):
+
+        current = parsed_urls[i]
+        destination = parsed_urls[i + 1]
+
+        # HTTP → HTTPS is normal
+        if (
+            current.hostname == destination.hostname
+            and current.scheme == "http"
+            and destination.scheme == "https"
+        ):
+            continue
+
+        # Same hostname with minor URL normalization
+        if current.hostname == destination.hostname:
+            continue
+
+        # www ↔ non-www is normal
+        current_base = (
+            current.hostname[4:]
+            if current.hostname.startswith("www.")
+            else current.hostname
+        )
+
+        destination_base = (
+            destination.hostname[4:]
+            if destination.hostname.startswith("www.")
+            else destination.hostname
+        )
+
+        if current_base == destination_base:
+            continue
+
+        canonical_redirect = False
+
+    # ---------------------------------------------------------
+    # NORMAL REDIRECT
+    # ---------------------------------------------------------
+
+    if canonical_redirect:
 
         signals.append({
-            "type": "redirect",
-            "severity": "low",
+            "type": "canonical_redirect",
+            "severity": "info",
             "message": (
-                "URL redirects once before reaching "
-                "its destination."
+                "URL redirects to a canonical version "
+                "of the same domain."
             )
         })
 
-    elif redirect_count <= 3:
+        return signals
+
+    # ---------------------------------------------------------
+    # CROSS-DOMAIN REDIRECT
+    # ---------------------------------------------------------
+
+    if len(unique_domains) > 1:
+
+        signals.append({
+            "type": "cross_domain_redirect",
+            "severity": "medium",
+            "message": (
+                f"Redirect chain crosses "
+                f"{len(unique_domains)} different domains."
+            )
+        })
+
+    # ---------------------------------------------------------
+    # NUMBER OF REDIRECTS
+    # ---------------------------------------------------------
+
+    if redirect_count <= 3:
 
         signals.append({
             "type": "multiple_redirects",
@@ -339,34 +418,6 @@ def analyze_redirect_chain(redirect_chain):
             "message": (
                 f"URL passes through {redirect_count} redirects "
                 "before reaching its destination."
-            )
-        })
-
-    # ---------------------------------------------------------
-    # CROSS-DOMAIN REDIRECT
-    # ---------------------------------------------------------
-
-    domains = []
-
-    for url in redirect_chain:
-
-        parsed = urlparse(url)
-
-        if parsed.hostname:
-            domains.append(
-                parsed.hostname.lower()
-            )
-
-    unique_domains = set(domains)
-
-    if len(unique_domains) > 1:
-
-        signals.append({
-            "type": "cross_domain_redirect",
-            "severity": "medium",
-            "message": (
-                f"Redirect chain crosses {len(unique_domains)} "
-                "different domains."
             )
         })
 
